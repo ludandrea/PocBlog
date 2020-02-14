@@ -15,6 +15,7 @@ using Blog.Data;
 using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
+using Blog.Hubs;
 
 namespace Blog
 {
@@ -38,12 +39,14 @@ namespace Blog
             {
                 builder.AllowAnyOrigin()
                        .AllowAnyMethod()
-                       .AllowAnyHeader();
+                       .AllowAnyHeader();       
             }));
 
             services.AddScoped(typeof(IDataRepository<>), typeof(DataRepository<>));
 
-            services.AddSwaggerGen(options => options.SwaggerDoc("v1", new OpenApiInfo { Title = "My Music", Version = "v1" }));
+            services.AddSignalR();
+
+            services.AddSwaggerGen(options => options.SwaggerDoc("v1", new OpenApiInfo { Title = "Poc Blog", Version = "v1" }));
 
             services.AddSpaStaticFiles(configuration =>
             {
@@ -69,18 +72,19 @@ namespace Blog
 
             app.UseAuthorization();
 
-            app.UseCors();
+            app.UseCors("MyPolicy");
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<MessageHub>("/chat");
             });
 
             app.UseSwagger();
 
             app.UseSwaggerUI(c =>
             {
-                c.RoutePrefix = "";
+                c.RoutePrefix = "/swagger";
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My Music V1");
             });
 
